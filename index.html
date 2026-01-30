@@ -540,7 +540,7 @@
             const chartDom = document.getElementById('heatmap-chart');
             
             // 높이 설정: 전체보기는 3년치라 길게(500px), 1년치는 짧게(240px)
-            if (mode === 'all') { chartDom.style.height = '500px'; } 
+            if (mode === 'all') { chartDom.style.height = '750px'; } 
             else { chartDom.style.height = '240px'; }
 
             if (chartInstance) { chartInstance.dispose(); }
@@ -568,9 +568,9 @@
                 
                 // 3개의 캘린더 배치 (위에서부터 2024, 2025, 2026)
                 option.calendar = [
-                    { top: 40, range: '2024', cellSize: ['auto', 20], itemStyle: { borderWidth: 4, borderColor: '#161b22', borderRadius: 5 }, dayLabel: { nameMap: 'ko', color: '#8b949e' }, monthLabel: { nameMap: 'ko', color: '#fff', fontWeight: 'bold' } },
-                    { top: 200, range: '2025', cellSize: ['auto', 20], itemStyle: { borderWidth: 4, borderColor: '#161b22', borderRadius: 5 }, dayLabel: { nameMap: 'ko', color: '#8b949e' }, monthLabel: { nameMap: 'ko', color: '#fff', fontWeight: 'bold' } },
-                    { top: 360, range: '2026', cellSize: ['auto', 20], itemStyle: { borderWidth: 4, borderColor: '#161b22', borderRadius: 5 }, dayLabel: { nameMap: 'ko', color: '#8b949e' }, monthLabel: { nameMap: 'ko', color: '#fff', fontWeight: 'bold' } }
+                    { top: 50, range: '2024', cellSize: ['auto', 20], itemStyle: { borderWidth: 4, borderColor: '#161b22', borderRadius: 5 }, dayLabel: { nameMap: 'ko', color: '#8b949e' }, monthLabel: { nameMap: 'ko', color: '#fff', fontWeight: 'bold' } },
+                    { top: 280, range: '2025', cellSize: ['auto', 20], itemStyle: { borderWidth: 4, borderColor: '#161b22', borderRadius: 5 }, dayLabel: { nameMap: 'ko', color: '#8b949e' }, monthLabel: { nameMap: 'ko', color: '#fff', fontWeight: 'bold' } },
+                    { top: 510, range: '2026', cellSize: ['auto', 20], itemStyle: { borderWidth: 4, borderColor: '#161b22', borderRadius: 5 }, dayLabel: { nameMap: 'ko', color: '#8b949e' }, monthLabel: { nameMap: 'ko', color: '#fff', fontWeight: 'bold' } }
                 ];
 
                 // 데이터 연결
@@ -665,6 +665,7 @@
     </script>
 </body>
 </html>
+
 
 
 
