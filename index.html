@@ -242,6 +242,26 @@
             .notes-grid { gap: 10px; }
             .note { width: 45%; height: 140px; }
         }
+        /* [NEW] 히트맵 섹션 타이틀 (하얗고 빛나는 효과) */
+        .section-title {
+            font-size: 2rem; 
+            font-weight: 800; 
+            color: #ffffff; 
+            margin-bottom: 25px;
+            text-align: center;
+            /* 악어그린 & 당근오렌지 후광 효과 */
+            text-shadow: 
+                0 0 10px rgba(46, 125, 50, 0.6), 
+                0 0 20px rgba(245, 124, 0, 0.4);
+        }
+        
+        .section-sub-title {
+            font-size: 0.6em; 
+            opacity: 0.7; 
+            font-weight: 400; 
+            margin-left: 8px;
+            text-shadow: none; /* 작은 글씨는 그림자 제거해서 가독성 확보 */
+        }
     </style>
 </head>
 <body>
@@ -304,6 +324,11 @@
         </div>
 
         <div id="heatmap-section">
+            <h2 class="section-title">
+                그 동안 함께한 기록보기
+                <span class="section-sub-title">(youtube 아카이브 기준)</span>
+            </h2>
+
             <div class="heatmap-tabs">
                 <button class="tab-btn active" onclick="updateHeatmap('all', this)">전체보기 (3 Years)</button>
                 <button class="tab-btn" onclick="updateHeatmap('2024', this)">2024</button>
@@ -524,7 +549,7 @@
             animateCounter("total-hours", 0);
         }
 // ----------------------------------------------------
-        // [FIX] 히트맵 차트 (전체보기 = 3년 적층 보기)
+        // [FIX] 히트맵 차트 로직 (클릭 정확도 개선 & 타이틀 추가 대응)
         // ----------------------------------------------------
         let chartInstance = null;
         
@@ -539,20 +564,26 @@
 
             const chartDom = document.getElementById('heatmap-chart');
             
-            // 높이 설정: 전체보기는 3년치라 길게(500px), 1년치는 짧게(240px)
+            // 높이 설정
             if (mode === 'all') { chartDom.style.height = '750px'; } 
             else { chartDom.style.height = '240px'; }
 
+            // 기존 차트 삭제 후 새로 생성 (메모리 누수 방지 및 리사이즈 버그 해결)
             if (chartInstance) { chartInstance.dispose(); }
             chartInstance = echarts.init(chartDom, 'dark');
 
             let option = {
                 backgroundColor: 'transparent',
-                tooltip: { backgroundColor: 'rgba(0,0,0,0.8)', borderColor: '#FFD700' },
+                tooltip: { 
+                    position: 'top', // 툴팁이 손가락/마우스 가리지 않게 위로
+                    backgroundColor: 'rgba(0,0,0,0.9)', 
+                    borderColor: '#FFD700',
+                    textStyle: { color: '#fff' }
+                },
                 visualMap: { 
                     min: 1, max: 200, show: false, 
                     inRange: { color: ['#2e2600', '#8a6d00', '#FFD700'] },
-                    dimension: 1 // 기본값
+                    dimension: 1 
                 },
                 series: []
             };
@@ -564,16 +595,20 @@
                 option.visualMap.max = 200;
                 option.visualMap.dimension = 1;
 
-                option.tooltip.formatter = p => `${p.value[0]}<br>⏱️ ${p.value[3] || Math.floor(p.value[1]/60)+'시간'}`;
+                option.tooltip.formatter = p => {
+                    // 데이터가 없으면 표시 안 함
+                    if (!p.value) return ''; 
+                    const title = p.value[3] ? `<br>🎬 ${p.value[3]}` : ''; // 제목이 있으면 표시
+                    return `<b>${p.value[0]}</b><br>⏱️ ${Math.floor(p.value[1]/60)}시간 ${p.value[1]%60}분${title}`;
+                };
                 
-                // 3개의 캘린더 배치 (위에서부터 2024, 2025, 2026)
+                // 달력 간격 배치 (50 -> 280 -> 510)
                 option.calendar = [
                     { top: 50, range: '2024', cellSize: ['auto', 20], itemStyle: { borderWidth: 4, borderColor: '#161b22', borderRadius: 5 }, dayLabel: { nameMap: 'ko', color: '#8b949e' }, monthLabel: { nameMap: 'ko', color: '#fff', fontWeight: 'bold' } },
                     { top: 280, range: '2025', cellSize: ['auto', 20], itemStyle: { borderWidth: 4, borderColor: '#161b22', borderRadius: 5 }, dayLabel: { nameMap: 'ko', color: '#8b949e' }, monthLabel: { nameMap: 'ko', color: '#fff', fontWeight: 'bold' } },
                     { top: 510, range: '2026', cellSize: ['auto', 20], itemStyle: { borderWidth: 4, borderColor: '#161b22', borderRadius: 5 }, dayLabel: { nameMap: 'ko', color: '#8b949e' }, monthLabel: { nameMap: 'ko', color: '#fff', fontWeight: 'bold' } }
                 ];
 
-                // 데이터 연결
                 option.series = [
                     { type: 'heatmap', coordinateSystem: 'calendar', calendarIndex: 0, data: heatmapData.filter(d => d[0].startsWith('2024')) },
                     { type: 'heatmap', coordinateSystem: 'calendar', calendarIndex: 1, data: heatmapData.filter(d => d[0].startsWith('2025')) },
@@ -582,13 +617,17 @@
 
             } 
             // ----------------------------------------
-            // [B] 연도별 보기 (1년치만 크게)
+            // [B] 연도별 보기 (1년치)
             // ----------------------------------------
             else {
                 option.visualMap.max = 200;
                 option.visualMap.dimension = 1;
 
-                option.tooltip.formatter = p => `${p.value[0]}<br>⏱️ ${p.value[3] || Math.floor(p.value[1]/60)+'시간'}`;
+                option.tooltip.formatter = p => {
+                    if (!p.value) return '';
+                    const title = p.value[3] ? `<br>🎬 ${p.value[3]}` : '';
+                    return `<b>${p.value[0]}</b><br>⏱️ ${Math.floor(p.value[1]/60)}시간 ${p.value[1]%60}분${title}`;
+                };
                 
                 option.calendar = { 
                     top: 40, range: mode, 
@@ -606,9 +645,20 @@
                 }];
             }
 
+            // 옵션 적용
             chartInstance.setOption(option);
-            chartInstance.on('click', p => { if(p.value && p.value[2]) openModal(p.value[2]); });
-            chartInstance.resize();
+
+            // [중요] 클릭 이벤트 정확도 수정
+            // 기존에는 mode !== 'all' 조건 때문에 전체보기에서 클릭이 안 되었음 -> 조건 삭제
+            // p.data[2]에 영상 ID가 있는지 확인
+            chartInstance.on('click', function(p) {
+                if (p.data && p.data[2]) {
+                    openModal(p.data[2]);
+                }
+            });
+
+            // 화면 크기에 맞춰 차트 크기 재조정 (렌더링 꼬임 방지)
+            setTimeout(() => { chartInstance.resize(); }, 50);
         };
 
         window.addEventListener('resize', () => { if(chartInstance) chartInstance.resize(); });
@@ -665,6 +715,7 @@
     </script>
 </body>
 </html>
+
 
 
 
