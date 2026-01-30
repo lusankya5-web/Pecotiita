@@ -648,16 +648,13 @@
             // 옵션 적용
             chartInstance.setOption(option);
 
-            // [중요] 클릭 이벤트 정확도 수정
-            // 기존에는 mode !== 'all' 조건 때문에 전체보기에서 클릭이 안 되었음 -> 조건 삭제
-            // p.data[2]에 영상 ID가 있는지 확인
+        // 클릭 이벤트 (영상 재생)
             chartInstance.on('click', function(p) {
                 if (p.data && p.data[2]) {
                     openModal(p.data[2]);
                 }
             });
 
-            // 화면 크기에 맞춰 차트 크기 재조정 (렌더링 꼬임 방지)
             setTimeout(() => { chartInstance.resize(); }, 50);
         };
 
@@ -715,6 +712,7 @@
     </script>
 </body>
 </html>
+
 
 
 
