@@ -305,10 +305,10 @@
 
         <div id="heatmap-section">
             <div class="heatmap-tabs">
-                <button class="tab-btn active" onclick="updateHeatmap('all', this)">전체보기 (Monthly)</button>
-                <button class="tab-btn" onclick="updateHeatmap('2026', this)">2026</button>
-                <button class="tab-btn" onclick="updateHeatmap('2025', this)">2025</button>
+                <button class="tab-btn active" onclick="updateHeatmap('all', this)">전체보기 (3 Years)</button>
                 <button class="tab-btn" onclick="updateHeatmap('2024', this)">2024</button>
+                <button class="tab-btn" onclick="updateHeatmap('2025', this)">2025</button>
+                <button class="tab-btn" onclick="updateHeatmap('2026', this)">2026</button>
             </div>
             <div id="heatmap-chart"></div>
         </div>
@@ -486,9 +486,8 @@
         }
         animateCounter("total-days", 135);
         animateCounter("total-hours", 295);
-
 // ----------------------------------------------------
-        // [FIX] 히트맵 차트 로직 (데이터 인덱스 매핑 수정)
+        // [FIX] 히트맵 차트 (전체보기 = 3년 적층 보기)
         // ----------------------------------------------------
         let chartInstance = null;
         
@@ -503,77 +502,54 @@
 
             const chartDom = document.getElementById('heatmap-chart');
             
-            // 높이 설정
-            if (mode === 'all') { chartDom.style.height = '200px'; } // 1줄짜리 월별 요약이므로 높이 줄임
-            else { chartDom.style.height = '240px'; } // 달력은 조금 더 높게
+            // 높이 설정: 전체보기는 3년치라 길게(500px), 1년치는 짧게(240px)
+            if (mode === 'all') { chartDom.style.height = '500px'; } 
+            else { chartDom.style.height = '240px'; }
 
             if (chartInstance) { chartInstance.dispose(); }
             chartInstance = echarts.init(chartDom, 'dark');
 
-            // 기본 옵션 (공통)
             let option = {
                 backgroundColor: 'transparent',
                 tooltip: { backgroundColor: 'rgba(0,0,0,0.8)', borderColor: '#FFD700' },
                 visualMap: { 
-                    min: 1, 
-                    show: false, 
-                    inRange: { color: ['#2e2600', '#8a6d00', '#FFD700'] }
+                    min: 1, max: 200, show: false, 
+                    inRange: { color: ['#2e2600', '#8a6d00', '#FFD700'] },
+                    dimension: 1 // 기본값
                 },
                 series: []
             };
 
             // ----------------------------------------
-            // [A] 전체보기 (월별 합산 -> 1줄짜리 Grid)
+            // [A] 전체보기 (3년치 연도별 적층 View)
             // ----------------------------------------
             if (mode === 'all') {
-                // 월별 합계 계산 (모든 연도 합침)
-                const monthlySum = new Array(12).fill(0);
-                heatmapData.forEach(item => {
-                    // "2024-01-01" -> 01 -> 인덱스 0
-                    const monthIndex = parseInt(item[0].split('-')[1], 10) - 1;
-                    monthlySum[monthIndex] += item[1]; // 시간(분) 합산
-                });
+                option.visualMap.max = 200;
+                option.visualMap.dimension = 1;
 
-                // ECharts Grid 데이터: [x(월), y(0), value]
-                const chartData = monthlySum.map((val, idx) => [idx, 0, val]);
+                option.tooltip.formatter = p => `${p.value[0]}<br>⏱️ ${p.value[3] || Math.floor(p.value[1]/60)+'시간'}`;
+                
+                // 3개의 캘린더 배치 (위에서부터 2024, 2025, 2026)
+                option.calendar = [
+                    { top: 40, range: '2024', cellSize: ['auto', 20], itemStyle: { borderWidth: 4, borderColor: '#161b22', borderRadius: 5 }, dayLabel: { nameMap: 'ko', color: '#8b949e' }, monthLabel: { nameMap: 'ko', color: '#fff', fontWeight: 'bold' } },
+                    { top: 200, range: '2025', cellSize: ['auto', 20], itemStyle: { borderWidth: 4, borderColor: '#161b22', borderRadius: 5 }, dayLabel: { nameMap: 'ko', color: '#8b949e' }, monthLabel: { nameMap: 'ko', color: '#fff', fontWeight: 'bold' } },
+                    { top: 360, range: '2026', cellSize: ['auto', 20], itemStyle: { borderWidth: 4, borderColor: '#161b22', borderRadius: 5 }, dayLabel: { nameMap: 'ko', color: '#8b949e' }, monthLabel: { nameMap: 'ko', color: '#fff', fontWeight: 'bold' } }
+                ];
 
-                // 시각화 설정
-                const maxVal = Math.max(...monthlySum) || 100;
-                option.visualMap.max = maxVal; // 최대값 자동 조절
-                option.visualMap.dimension = 2; // [x, y, value] 중 value 사용
-
-                option.tooltip.formatter = p => `<b>${p.value[0]+1}월</b><br>🔥 총 ${Math.floor(p.value[2]/60)}시간 방송`;
-                
-                option.grid = { height: '50%', top: '25%', left: '5%', right: '5%' };
-                
-                option.xAxis = { 
-                    type: 'category', 
-                    data: ['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'],
-                    splitArea: { show: true, areaStyle: { color: ['rgba(255,255,255,0.02)','rgba(255,255,255,0.05)'] } },
-                    axisLabel: { color: '#8b949e', fontWeight: 'bold' }
-                };
-                
-                option.yAxis = { 
-                    type: 'category', 
-                    data: ['합계'], 
-                    show: false // Y축 라벨 숨김 (깔끔하게)
-                };
-                
-                option.series = [{
-                    type: 'heatmap',
-                    data: chartData,
-                    label: { show: false },
-                    itemStyle: { borderRadius: 4, borderColor: '#0d1117', borderWidth: 2 },
-                    emphasis: { itemStyle: { shadowBlur: 10, shadowColor: 'rgba(0, 0, 0, 0.5)' } }
-                }];
+                // 데이터 연결
+                option.series = [
+                    { type: 'heatmap', coordinateSystem: 'calendar', calendarIndex: 0, data: heatmapData.filter(d => d[0].startsWith('2024')) },
+                    { type: 'heatmap', coordinateSystem: 'calendar', calendarIndex: 1, data: heatmapData.filter(d => d[0].startsWith('2025')) },
+                    { type: 'heatmap', coordinateSystem: 'calendar', calendarIndex: 2, data: heatmapData.filter(d => d[0].startsWith('2026')) }
+                ];
 
             } 
             // ----------------------------------------
-            // [B] 연도별 보기 (일별 달력)
+            // [B] 연도별 보기 (1년치만 크게)
             // ----------------------------------------
             else {
-                option.visualMap.max = 200; // 일별 최대 시간 (약 3~4시간)
-                option.visualMap.dimension = 1; // [날짜, 시간, ID, 텍스트] -> 2번째(인덱스 1) 사용
+                option.visualMap.max = 200;
+                option.visualMap.dimension = 1;
 
                 option.tooltip.formatter = p => `${p.value[0]}<br>⏱️ ${p.value[3] || Math.floor(p.value[1]/60)+'시간'}`;
                 
@@ -583,19 +559,18 @@
                     itemStyle: { borderWidth: 4, borderColor: '#161b22', borderRadius: 5 }, 
                     dayLabel: { nameMap: 'ko', color: '#8b949e' }, 
                     monthLabel: { nameMap: 'ko', color: '#fff', fontWeight: 'bold' },
-                    yearLabel: { show: false } // 연도 텍스트 중복 제거
+                    yearLabel: { show: false }
                 };
                 
                 option.series = [{ 
                     type: 'heatmap', 
                     coordinateSystem: 'calendar', 
-                    // 해당 연도 데이터만 필터링
                     data: heatmapData.filter(d => d[0].startsWith(mode)) 
                 }];
             }
 
             chartInstance.setOption(option);
-            chartInstance.on('click', p => { if(p.value && p.value[2] && mode !== 'all') openModal(p.value[2]); });
+            chartInstance.on('click', p => { if(p.value && p.value[2]) openModal(p.value[2]); });
             chartInstance.resize();
         };
 
@@ -653,7 +628,6 @@
     </script>
 </body>
 </html>
-
 
 
 
