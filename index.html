@@ -432,6 +432,34 @@
 
         @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
+        /* ------------------------------------------------
+           [NEW] 관리자 & 삭제 기능 스타일
+           ------------------------------------------------ */
+        
+        /* 1. 관리자 로그인 버튼 (우측 하단 구석에 희미하게 배치) */
+        .admin-gear {
+            position: fixed; bottom: 20px; left: 20px;
+            font-size: 24px; cursor: pointer; opacity: 0.3;
+            z-index: 9999; transition: 0.3s;
+        }
+        .admin-gear:hover { opacity: 1; transform: rotate(90deg); }
+
+        /* 2. 삭제 버튼 (평소에는 숨김) */
+        .delete-btn {
+            display: none; /* 기본적으로 안 보임 */
+            position: absolute; top: -10px; right: -10px;
+            width: 25px; height: 25px;
+            background: #ff5252; color: #fff;
+            border: none; border-radius: 50%;
+            font-weight: bold; font-size: 14px;
+            cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+            z-index: 10;
+        }
+
+        /* 3. 관리자 모드가 켜지면 삭제 버튼이 보임! */
+        body.admin-mode .delete-btn {
+            display: flex; align-items: center; justify-content: center;
+        }
         
     </style>
 </head>
@@ -591,8 +619,8 @@
 
 <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        // 'push', 'onChildAdded' 가 새로 추가되었습니다!
-        import { getDatabase, ref, onValue, runTransaction, push, onChildAdded } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+        // [중요] remove(삭제), onChildRemoved(삭제감지) 기능이 추가됨
+        import { getDatabase, ref, onValue, runTransaction, push, onChildAdded, remove, onChildRemoved } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
         // 🔥 [필수] 본인의 Firebase 설정값으로 채워주세요 🔥
         const firebaseConfig = {
@@ -609,12 +637,36 @@
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
         
-        // DB 경로 설정
-        const loveRef = ref(db, 'carrot_count'); // 당근 갯수
-        const msgRef = ref(db, 'guestbook');     // [NEW] 방명록 메시지
+        const loveRef = ref(db, 'carrot_count');
+        const msgRef = ref(db, 'guestbook');
 
         // ------------------------------------------------
-        // 1. [당근 버튼] 기능 (기존 코드 유지)
+        // 1. [관리자] 기능
+        // ------------------------------------------------
+        
+        // (1) 로그인 함수 (전역 window에 등록하여 HTML에서 호출 가능하게 함)
+        window.adminLogin = function() {
+            const pw = prompt("관리자 비밀번호를 입력하세요:");
+            if (pw === "0913") {
+                alert("관리자 모드 ON! 🔧\n메시지에 삭제 버튼(X)이 나타납니다.");
+                document.body.classList.add("admin-mode"); // CSS로 삭제 버튼 보이게 함
+            } else if (pw !== null) {
+                alert("비밀번호가 틀렸습니다.");
+            }
+        };
+
+        // (2) 삭제 함수
+        window.deleteMessage = function(key) {
+            if (confirm("정말로 이 메시지를 삭제하시겠습니까? (되돌릴 수 없습니다)")) {
+                // 파이어베이스에서 해당 key를 가진 데이터 삭제
+                remove(ref(db, 'guestbook/' + key))
+                    .then(() => alert("삭제되었습니다."))
+                    .catch((error) => alert("삭제 실패: " + error.message));
+            }
+        };
+
+        // ------------------------------------------------
+        // 2. [당근 버튼] 기능
         // ------------------------------------------------
         onValue(loveRef, (snapshot) => {
             const data = snapshot.val() || 0;
@@ -631,53 +683,48 @@
         }
 
         // ------------------------------------------------
-        // 2. [방명록] 기능 (새로 추가됨)
+        // 3. [방명록] 기능
         // ------------------------------------------------
         
-        // (1) 메시지 등록 (보내기 버튼 클릭 시)
-        document.getElementById('msg-send-btn').addEventListener('click', writeMessage);
-        
-        function writeMessage() {
+        // (1) 메시지 등록
+        document.getElementById('msg-send-btn').addEventListener('click', () => {
             const nameInput = document.getElementById('msg-name');
             const contentInput = document.getElementById('msg-content');
-            
             const name = nameInput.value.trim();
             const content = contentInput.value.trim();
 
             if (!name || !content) {
-                alert("닉네임과 내용을 모두 입력해주세요! 🥺");
+                alert("닉네임과 내용을 모두 입력해주세요!");
                 return;
             }
 
-            // 파이어베이스에 저장 (push)
             push(msgRef, {
                 name: name,
                 content: content,
-                date: new Date().toLocaleDateString(), // 오늘 날짜
-                timestamp: Date.now() // 정렬용 시간
+                date: new Date().toLocaleDateString(),
+                timestamp: Date.now()
             });
 
-            // 입력창 비우기
             nameInput.value = '';
             contentInput.value = '';
-        }
+        });
 
-        // (2) 실시간 메시지 표시 (DB에 새 글이 생기면 화면에 붙임)
-        // 데이터가 '추가될 때마다' 이 함수가 실행됩니다.
+        // (2) 메시지 표시 (화면에 추가)
         onChildAdded(msgRef, (data) => {
             const msg = data.val();
+            const key = data.key; // 데이터의 고유 ID (삭제할 때 필요)
             const board = document.getElementById('message-board');
 
-            // 포스트잇 카드 만들기
             const card = document.createElement('div');
-            
-            // 랜덤 색상 부여 (노랑, 파랑, 핑크, 초록 중 하나)
             const colors = ['note-yellow', 'note-blue', 'note-pink', 'note-green'];
             const randomColor = colors[Math.floor(Math.random() * colors.length)];
             
             card.className = `msg-card ${randomColor}`;
+            card.id = `msg-${key}`; // 나중에 화면에서 지울 때를 위해 ID 부여
             
             card.innerHTML = `
+                <button class="delete-btn" onclick="deleteMessage('${key}')">X</button>
+                
                 <div class="msg-header">
                     <span>From. ${escapeHtml(msg.name)}</span>
                     <span class="msg-date">${msg.date}</span>
@@ -685,18 +732,26 @@
                 <div class="msg-body">${escapeHtml(msg.content)}</div>
             `;
 
-            // 최신 글이 맨 위에 오게 하려면 prepend, 아래에 쌓으려면 append
             board.prepend(card); 
         });
 
-        // (보안) HTML 태그 무력화 함수 (XSS 방지)
+        // (3) [NEW] 실시간 삭제 반영 (DB에서 지워지면 화면에서도 슉 사라짐)
+        onChildRemoved(msgRef, (data) => {
+            const element = document.getElementById(`msg-${data.key}`);
+            if (element) {
+                // 뿅 하고 사라지는 애니메이션
+                element.style.transform = "scale(0)";
+                setTimeout(() => element.remove(), 300);
+            }
+        });
+
         function escapeHtml(text) {
             if (!text) return "";
             return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
         }
 
         // ------------------------------------------------
-        // [유틸] 이모지 효과 함수
+        // [유틸] 이모지 효과
         // ------------------------------------------------
         function createPopEmojis(x, y) {
             const emojis = ['🥕', '🧡', '🥕', '✨']; 
@@ -1011,6 +1066,7 @@
     </script>
 </body>
 </html>
+
 
 
 
