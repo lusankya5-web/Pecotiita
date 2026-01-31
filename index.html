@@ -338,6 +338,50 @@
             margin-left: 8px;
             text-shadow: none; /* 작은 글씨는 그림자 제거해서 가독성 확보 */
         }
+
+/* [NEW] 상단 마음 전하기 버튼 위치 */
+        .love-container-top {
+            margin-top: 40px; /* 통계 카드와의 간격 */
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: center;
+            position: relative;
+        }
+
+        /* 버튼 스타일 (기존 유지 + 업그레이드) */
+        .carrot-btn {
+            background: linear-gradient(135deg, #FFD700, #FFA500); 
+            color: #000; border: none;
+            padding: 15px 40px; font-size: 1.2rem; font-weight: 800; border-radius: 50px;
+            box-shadow: 0 8px 25px rgba(255, 165, 0, 0.4); 
+            transition: transform 0.1s, box-shadow 0.2s;
+            cursor: pointer; position: relative; overflow: visible; /* 이모지 튀어나옴 허용 */
+        }
+        .carrot-btn:active { transform: scale(0.95); box-shadow: 0 4px 10px rgba(255, 165, 0, 0.4); }
+
+        /* [NEW] 팝업 이모지 효과 (세련된 움직임) */
+        .pop-emoji {
+            position: absolute;
+            pointer-events: none;
+            font-size: 1.5rem;
+            z-index: 100;
+            animation: popUpFloat 1s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+        }
+
+        @keyframes popUpFloat {
+            0% {
+                opacity: 0;
+                transform: translate(-50%, 0) scale(0.5) rotate(0deg);
+            }
+            20% {
+                opacity: 1;
+                transform: translate(-50%, -40px) scale(1.2) rotate(10deg);
+            }
+            100% {
+                opacity: 0;
+                transform: translate(calc(-50% + var(--x-move)), -150px) scale(1) rotate(var(--rot));
+            }
+        }
     </style>
 </head>
 <body>
@@ -379,6 +423,12 @@
                     <div class="card-icon">🕰️</div> <div class="sparkle">✨</div>
                     <span class="stat-value" id="total-hours">0</span> <span class="stat-label">방송한 시간</span>
                 </div>
+            </div>
+            
+            <div class="love-container-top">
+                <button id="love-btn" class="carrot-btn">
+                    🥕 마음 전하기 <span id="love-count">0</span>
+                </button>
             </div>
         </div>
 
@@ -476,11 +526,6 @@
             <div id="messages-display" class="notes-grid"></div>
         </div>
 
-        <div class="love-section">
-            <button class="carrot-btn" id="love-btn">🥕 마음 전하기 <span id="love-count">0</span></button>
-        </div>
-    </div>
-
     <div id="video-modal">
         <div id="video-container"><iframe id="video-frame" allowfullscreen></iframe><video id="local-video" controls style="display:none;"></video></div>
         <button class="close-btn" onclick="closeModal()">닫기</button>
@@ -489,58 +534,80 @@
     <script src="./data.js"></script>
     <script src="https://www.youtube.com/iframe_api"></script>
 
-    <script type="module">
+<script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getDatabase, ref, push, onChildAdded, onChildRemoved, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+        import { getDatabase, ref, onValue, runTransaction } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
+        // 🔥 사용자님의 키 + DB 주소 합체 완료 🔥
         const firebaseConfig = {
-            apiKey: "본인의_API_KEY",
-            authDomain: "본인의_PROJECT_ID.firebaseapp.com",
-            databaseURL: "https://본인의_PROJECT_ID-default-rtdb.firebaseio.com",
-            projectId: "본인의_PROJECT_ID",
-            storageBucket: "본인의_PROJECT_ID.appspot.com",
-            messagingSenderId: "...",
-            appId: "..."
+            apiKey: "AIzaSyBPf06S24ITUXs8nJSCzNKUMTVlbuO0Y5o",
+            authDomain: "pecotiita-love.firebaseapp.com",
+            
+            // [중요] 이게 있어야 당근 갯수가 저장됩니다!
+            databaseURL: "https://pecotiita-love-default-rtdb.firebaseio.com",
+            
+            projectId: "pecotiita-love",
+            storageBucket: "pecotiita-love.firebasestorage.app",
+            messagingSenderId: "192894613771",
+            appId: "1:192894613771:web:7793b913c639104f018a0e",
+            measurementId: "G-MY1NYP8V10"
         };
 
+        // Firebase 초기화
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
-        const msgRef = ref(db, 'messages');
+        const loveRef = ref(db, 'carrot_count'); // DB에 저장될 이름
 
-        window.adminLogin = function() {
-            const password = prompt("관리자 비밀번호:");
-            if(password === "0913") {
-                alert("관리자 모드 ON");
-                document.body.classList.add("admin-mode");
-            } else if (password !== null) { alert("비밀번호 오류"); }
-        };
-
-        window.deleteMessage = function(key) {
-            if(confirm("삭제하시겠습니까?")) remove(ref(db, 'messages/' + key));
-        };
-
-        document.getElementById('send-btn').addEventListener('click', () => {
-            const name = document.getElementById('user-name').value;
-            const content = document.getElementById('user-msg').value;
-            if(name && content) {
-                push(msgRef, { name, content, timestamp: Date.now() });
-                document.getElementById('user-msg').value = '';
-            } else { alert("내용을 입력해주세요!"); }
+        // 1. [읽기] DB 숫자가 바뀌면 화면 업데이트
+        onValue(loveRef, (snapshot) => {
+            const data = snapshot.val() || 0;
+            const countEl = document.getElementById('love-count');
+            if(countEl) countEl.innerText = data.toLocaleString();
         });
 
-        onChildAdded(msgRef, (data) => {
-            const msg = data.val();
-            const note = document.createElement('div');
-            note.className = 'note';
-            note.id = `msg-${data.key}`;
-            note.innerHTML = `<button class="delete-btn" onclick="deleteMessage('${data.key}')">X</button><strong>${msg.name}</strong>${msg.content}`;
-            document.getElementById('messages-display').prepend(note);
-        });
+        // 2. [클릭] 숫자 증가 + 세련된 이모지 효과
+        const btn = document.getElementById('love-btn');
+        if(btn) {
+            btn.addEventListener('click', (e) => {
+                // (1) DB 숫자 증가 (트랜잭션)
+                runTransaction(loveRef, (currentCount) => {
+                    return (currentCount || 0) + 1;
+                });
 
-        onChildRemoved(msgRef, (data) => {
-            const el = document.getElementById(`msg-${data.key}`);
-            if(el) el.remove();
-        });
+                // (2) 이모지 팡팡 효과
+                createPopEmojis(e.clientX, e.clientY);
+            });
+        }
+
+        // 🥕🧡 이모지 생성 함수
+        function createPopEmojis(x, y) {
+            const emojis = ['🥕', '🧡', '🥕', '✨']; 
+            
+            // 한 번 클릭에 3~5개의 이모지가 랜덤하게 튀어나옴
+            const count = 3 + Math.floor(Math.random() * 3); 
+
+            for (let i = 0; i < count; i++) {
+                const el = document.createElement('div');
+                el.className = 'pop-emoji';
+                el.innerText = emojis[Math.floor(Math.random() * emojis.length)];
+                
+                // 랜덤 움직임 설정
+                const randomX = (Math.random() - 0.5) * 100 + 'px'; 
+                const randomRot = (Math.random() - 0.5) * 60 + 'deg'; 
+                
+                el.style.setProperty('--x-move', randomX);
+                el.style.setProperty('--rot', randomRot);
+
+                // 클릭 위치 보정
+                el.style.left = x + 'px';
+                el.style.top = y + 'px';
+                
+                document.body.appendChild(el);
+
+                // 애니메이션 끝나면 삭제
+                setTimeout(() => el.remove(), 1000);
+            }
+        }
     </script>
 
     <script>
@@ -838,6 +905,7 @@
     </script>
 </body>
 </html>
+
 
 
 
