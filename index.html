@@ -948,12 +948,20 @@
                 
                 // 달력 간격 배치 (50 -> 280 -> 510)
 // 달력 설정 (2024, 2025, 2026년)
+// 달력 설정 (2024, 2025, 2026년)
         option.calendar = [
             { 
                 top: 50, range: '2024', cellSize: ['auto', 20], 
                 itemStyle: { borderWidth: 4, borderColor: '#161b22', borderRadius: 5 }, 
-                dayLabel: { nameMap: 'ko', color: '#8b949e' },
-                /* [수정 1] 2024년 월 표기 변경 */
+                
+                /* ▼▼▼ [수정 1] 요일(Day) 일본어로 변경 ▼▼▼ */
+                dayLabel: { 
+                    nameMap: ['日', '月', '火', '水', '木', '金', '土'], 
+                    color: '#8b949e', 
+                    fontFamily: 'Noto Sans JP' 
+                },
+
+                /* 월(Month) 설정 (아까 바꾼 것 유지) */
                 monthLabel: { 
                     nameMap: ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月'], 
                     color: '#fff', fontWeight: 'bold', fontFamily: 'Noto Sans JP' 
@@ -962,8 +970,14 @@
             { 
                 top: 270, range: '2025', cellSize: ['auto', 20], 
                 itemStyle: { borderWidth: 4, borderColor: '#161b22', borderRadius: 5 }, 
-                dayLabel: { nameMap: 'ko', color: '#8b949e' },
-                /* [수정 2] 2025년 월 표기 변경 */
+                
+                /* ▼▼▼ [수정 2] 요일 변경 ▼▼▼ */
+                dayLabel: { 
+                    nameMap: ['日', '月', '火', '水', '木', '金', '土'], 
+                    color: '#8b949e', 
+                    fontFamily: 'Noto Sans JP' 
+                },
+
                 monthLabel: { 
                     nameMap: ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月'], 
                     color: '#fff', fontWeight: 'bold', fontFamily: 'Noto Sans JP' 
@@ -972,8 +986,14 @@
             { 
                 top: 470, range: '2026', cellSize: ['auto', 20], 
                 itemStyle: { borderWidth: 4, borderColor: '#161b22', borderRadius: 5 }, 
-                dayLabel: { nameMap: 'ko', color: '#8b949e' },
-                /* [수정 3] 2026년 월 표기 변경 */
+                
+                /* ▼▼▼ [수정 3] 요일 변경 ▼▼▼ */
+                dayLabel: { 
+                    nameMap: ['日', '月', '火', '水', '木', '金', '土'], 
+                    color: '#8b949e', 
+                    fontFamily: 'Noto Sans JP' 
+                },
+
                 monthLabel: { 
                     nameMap: ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月'], 
                     color: '#fff', fontWeight: 'bold', fontFamily: 'Noto Sans JP' 
@@ -1005,7 +1025,11 @@
                     top: 40, range: mode, 
                     cellSize: ['auto', 20], 
                     itemStyle: { borderWidth: 4, borderColor: '#161b22', borderRadius: 5 }, 
-                    dayLabel: { nameMap: 'ko', color: '#8b949e' }, 
+                    dayLabel: { 
+                        nameMap: ['日', '月', '火', '水', '木', '金', '土'], 
+                        color: '#8b949e', 
+                        fontFamily: 'Noto Sans JP' 
+                },
                     monthLabel: { 
                         nameMap: ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月'], 
                         color: '#fff', 
@@ -1090,6 +1114,7 @@
     </script>
 </body>
 </html>
+
 
 
 
