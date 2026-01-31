@@ -836,7 +836,7 @@
 
         function animateCounter(id, end) {
             const obj = document.getElementById(id);
-            let start = 0; const duration = 1200; 
+            let start = 0; const duration = 8000; 
             const startTime = performance.now();
             function step(now) {
                 const progress = Math.min((now - startTime) / duration, 1);
@@ -1058,6 +1058,7 @@
     </script>
 </body>
 </html>
+
 
 
 
