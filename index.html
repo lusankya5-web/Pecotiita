@@ -142,20 +142,46 @@
             font-variant-numeric: tabular-nums; letter-spacing: -1px;
             animation: heartbeat 3s ease-in-out infinite;
         }
-        /* 사랑스러운 숨쉬기 애니메이션 */
-        .stat-value { animation: heartbeat 3s ease-in-out infinite; }
+/* 사랑스러운 숨쉬기 애니메이션 (하나로 통합) */
+        .stat-value { 
+            animation: heartbeat 3s ease-in-out infinite; 
+        }
         
+        /* .date-value에도 애니메이션을 주고 싶다면 animation: none;을 지우세요 */
+        .date-value { 
+            font-size: 1.6rem; 
+            margin-top: 8px; 
+            animation: none; /* 날짜는 움직이지 않게 고정됨 */
+        }
+
+        /* [중요] 중복 제거 후, 그림자 효과가 있는 버전만 유지 */
         @keyframes heartbeat {
             0% { transform: scale(1); }
-            50% { transform: scale(1.03); filter: drop-shadow(0 0 15px rgba(255,255,255,0.4)); }
+            50% { 
+                transform: scale(1.03); 
+                /* 하얗고 뽀얀 빛 번짐 효과 */
+                filter: drop-shadow(0 0 15px rgba(255,255,255,0.5)); 
+            }
             100% { transform: scale(1); }
         }
-        .date-value { font-size: 1.6rem; margin-top: 8px; animation: none; }
-        @keyframes heartbeat { 0% { transform: scale(1); } 50% { transform: scale(1.02); } 100% { transform: scale(1); } }
-        .stat-label { font-size: 0.9rem; color: #8b949e; font-weight: 500; letter-spacing: 0.5px; text-transform: uppercase; }
-        .sparkle { position: absolute; top: 10px; left: 10px; font-size: 20px; opacity: 0; pointer-events: none; }
+
+        .stat-label { 
+            font-size: 0.9rem; color: #8b949e; font-weight: 500; 
+            letter-spacing: 0.5px; text-transform: uppercase; 
+        }
+        
+        .sparkle { 
+            position: absolute; top: 10px; left: 10px; 
+            font-size: 20px; opacity: 0; pointer-events: none; 
+        }
+        
         .sparkle.animate { animation: sparklePop 1s ease-out forwards; }
-        @keyframes sparklePop { 0% { opacity: 0; transform: scale(0); } 50% { opacity: 1; transform: scale(1.2); } 100% { opacity: 0; transform: scale(0); } }
+        
+        @keyframes sparklePop { 
+            0% { opacity: 0; transform: scale(0); } 
+            50% { opacity: 1; transform: scale(1.2); } 
+            100% { opacity: 0; transform: scale(0); } 
+        }
 
         /* 앨범 슬라이더 */
         .album-section { position: relative; width: 100%; max-width: 800px; margin: 0 auto 80px; }
@@ -724,6 +750,7 @@
     </script>
 </body>
 </html>
+
 
 
 
