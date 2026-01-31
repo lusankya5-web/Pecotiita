@@ -514,6 +514,11 @@
                     <div class="album-slide"><img src="images/album5.jpg" alt="5" onerror="this.src='https://placehold.co/800x450/333/FFF?text=No+Image'"><div class="album-caption">기억속의 나날</div></div>
                     <div class="album-slide"><img src="images/album6.jpg" alt="6" onerror="this.src='https://placehold.co/800x450/333/FFF?text=No+Image'"><div class="album-caption">잊지 못할 날들</div></div>
                     <div class="album-slide"><img src="images/album7.jpg" alt="7" onerror="this.src='https://placehold.co/800x450/333/FFF?text=No+Image'"><div class="album-caption">고마워요</div></div>
+                    <div class="album-slide"><img src="images/album8.jpg" alt="8" onerror="this.src='https://placehold.co/800x450/333/FFF?text=No+Image'"><div class="album-caption">고마워요</div></div>
+                    <div class="album-slide"><img src="images/album9.jpg" alt="9" onerror="this.src='https://placehold.co/800x450/333/FFF?text=No+Image'"><div class="album-caption">고마워요</div></div>
+                    <div class="album-slide"><img src="images/album10.jpg" alt="10" onerror="this.src='https://placehold.co/800x450/333/FFF?text=No+Image'"><div class="album-caption">고마워요</div></div>
+                    <div class="album-slide"><img src="images/album11.jpg" alt="11" onerror="this.src='https://placehold.co/800x450/333/FFF?text=No+Image'"><div class="album-caption">고마워요</div></div>
+                    <div class="album-slide"><img src="images/album12.jpg" alt="12" onerror="this.src='https://placehold.co/800x450/333/FFF?text=No+Image'"><div class="album-caption">고마워요</div></div>
                 </div>
                 <button class="album-btn prev-btn" onclick="moveSlide(-1)">❮</button>
                 <button class="album-btn next-btn" onclick="moveSlide(1)">❯</button>
@@ -638,22 +643,22 @@
         
         // (1) 로그인 함수 (전역 window에 등록하여 HTML에서 호출 가능하게 함)
         window.adminLogin = function() {
-            const pw = prompt("관리자 비밀번호를 입력하세요:");
+            const pw = prompt("管理者パスワードを入力してください。:");
             if (pw === "0913") {
-                alert("관리자 모드 ON! 🔧\n메시지에 삭제 버튼(X)이 나타납니다.");
+                alert("管理者モードON！🔧\nメッセージに削除ボタン（✕）が表示されます。");
                 document.body.classList.add("admin-mode"); // CSS로 삭제 버튼 보이게 함
             } else if (pw !== null) {
-                alert("비밀번호가 틀렸습니다.");
+                alert("パスワードが間違っています。");
             }
         };
 
         // (2) 삭제 함수
         window.deleteMessage = function(key) {
-            if (confirm("정말로 이 메시지를 삭제하시겠습니까? (되돌릴 수 없습니다)")) {
+            if (confirm("本当にこのメッセージを削除しますか？（元に戻すことはできません）")) {
                 // 파이어베이스에서 해당 key를 가진 데이터 삭제
                 remove(ref(db, 'guestbook/' + key))
-                    .then(() => alert("삭제되었습니다."))
-                    .catch((error) => alert("삭제 실패: " + error.message));
+                    .then(() => alert("削除されました。"))
+                    .catch((error) => alert("削除に失敗しました。: " + error.message));
             }
         };
 
@@ -686,7 +691,7 @@
             const content = contentInput.value.trim();
 
             if (!name || !content) {
-                alert("닉네임과 내용을 모두 입력해주세요!");
+                alert("ニックネームと内容を両方入力してください！");
                 return;
             }
 
@@ -1058,6 +1063,7 @@
     </script>
 </body>
 </html>
+
 
 
 
