@@ -947,11 +947,39 @@
                 };
                 
                 // 달력 간격 배치 (50 -> 280 -> 510)
-                option.calendar = [
-                    { top: 50, range: '2024', cellSize: ['auto', 20], itemStyle: { borderWidth: 4, borderColor: '#161b22', borderRadius: 5 }, dayLabel: { nameMap: 'ko', color: '#8b949e' }, monthLabel: { nameMap: 'ko', color: '#fff', fontWeight: 'bold' } },
-                    { top: 270, range: '2025', cellSize: ['auto', 20], itemStyle: { borderWidth: 4, borderColor: '#161b22', borderRadius: 5 }, dayLabel: { nameMap: 'ko', color: '#8b949e' }, monthLabel: { nameMap: 'ko', color: '#fff', fontWeight: 'bold' } },
-                    { top: 470, range: '2026', cellSize: ['auto', 20], itemStyle: { borderWidth: 4, borderColor: '#161b22', borderRadius: 5 }, dayLabel: { nameMap: 'ko', color: '#8b949e' }, monthLabel: { nameMap: 'ko', color: '#fff', fontWeight: 'bold' } }
-                ];
+// 달력 설정 (2024, 2025, 2026년)
+        option.calendar = [
+            { 
+                top: 50, range: '2024', cellSize: ['auto', 20], 
+                itemStyle: { borderWidth: 4, borderColor: '#161b22', borderRadius: 5 }, 
+                dayLabel: { nameMap: 'ko', color: '#8b949e' },
+                /* [수정 1] 2024년 월 표기 변경 */
+                monthLabel: { 
+                    nameMap: ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月'], 
+                    color: '#fff', fontWeight: 'bold', fontFamily: 'Noto Sans JP' 
+                } 
+            },
+            { 
+                top: 270, range: '2025', cellSize: ['auto', 20], 
+                itemStyle: { borderWidth: 4, borderColor: '#161b22', borderRadius: 5 }, 
+                dayLabel: { nameMap: 'ko', color: '#8b949e' },
+                /* [수정 2] 2025년 월 표기 변경 */
+                monthLabel: { 
+                    nameMap: ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月'], 
+                    color: '#fff', fontWeight: 'bold', fontFamily: 'Noto Sans JP' 
+                } 
+            },
+            { 
+                top: 470, range: '2026', cellSize: ['auto', 20], 
+                itemStyle: { borderWidth: 4, borderColor: '#161b22', borderRadius: 5 }, 
+                dayLabel: { nameMap: 'ko', color: '#8b949e' },
+                /* [수정 3] 2026년 월 표기 변경 */
+                monthLabel: { 
+                    nameMap: ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月'], 
+                    color: '#fff', fontWeight: 'bold', fontFamily: 'Noto Sans JP' 
+                } 
+            }
+        ];
 
                 option.series = [
                     { type: 'heatmap', coordinateSystem: 'calendar', calendarIndex: 0, data: heatmapData.filter(d => d[0].startsWith('2024')) },
@@ -1062,6 +1090,7 @@
     </script>
 </body>
 </html>
+
 
 
 
