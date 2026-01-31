@@ -142,6 +142,14 @@
             font-variant-numeric: tabular-nums; letter-spacing: -1px;
             animation: heartbeat 3s ease-in-out infinite;
         }
+        /* 사랑스러운 숨쉬기 애니메이션 */
+        .stat-value { animation: heartbeat 3s ease-in-out infinite; }
+        
+        @keyframes heartbeat {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.03); filter: drop-shadow(0 0 15px rgba(255,255,255,0.4)); }
+            100% { transform: scale(1); }
+        }
         .date-value { font-size: 1.6rem; margin-top: 8px; animation: none; }
         @keyframes heartbeat { 0% { transform: scale(1); } 50% { transform: scale(1.02); } 100% { transform: scale(1); } }
         .stat-label { font-size: 0.9rem; color: #8b949e; font-weight: 500; letter-spacing: 0.5px; text-transform: uppercase; }
@@ -716,6 +724,7 @@
     </script>
 </body>
 </html>
+
 
 
 
