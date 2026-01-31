@@ -948,24 +948,9 @@
                 
                 // 달력 간격 배치 (50 -> 280 -> 510)
                 option.calendar = [
-                    { top: 50, range: '2024', cellSize: ['auto', 20], itemStyle: { borderWidth: 4, borderColor: '#161b22', borderRadius: 5 }, dayLabel: { nameMap: 'ko', color: '#8b949e' }, monthLabel: { 
-    nameMap: ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月'], 
-    color: '#fff', 
-    fontWeight: 'bold',
-    fontFamily: 'Noto Sans JP' /* (선택) 일본어 폰트가 더 예쁩니다 */
-}},
-                    { top: 270, range: '2025', cellSize: ['auto', 20], itemStyle: { borderWidth: 4, borderColor: '#161b22', borderRadius: 5 }, dayLabel: { nameMap: 'ko', color: '#8b949e' },monthLabel: { 
-    nameMap: ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月'], 
-    color: '#fff', 
-    fontWeight: 'bold',
-    fontFamily: 'Noto Sans JP' /* (선택) 일본어 폰트가 더 예쁩니다 */
-} },
-                    { top: 470, range: '2026', cellSize: ['auto', 20], itemStyle: { borderWidth: 4, borderColor: '#161b22', borderRadius: 5 }, dayLabel: { nameMap: 'ko', color: '#8b949e' }, monthLabel: { 
-    nameMap: ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月'], 
-    color: '#fff', 
-    fontWeight: 'bold',
-    fontFamily: 'Noto Sans JP' /* (선택) 일본어 폰트가 더 예쁩니다 */
-} }
+                    { top: 50, range: '2024', cellSize: ['auto', 20], itemStyle: { borderWidth: 4, borderColor: '#161b22', borderRadius: 5 }, dayLabel: { nameMap: 'ko', color: '#8b949e' }, monthLabel: { nameMap: 'ko', color: '#fff', fontWeight: 'bold' } },
+                    { top: 270, range: '2025', cellSize: ['auto', 20], itemStyle: { borderWidth: 4, borderColor: '#161b22', borderRadius: 5 }, dayLabel: { nameMap: 'ko', color: '#8b949e' }, monthLabel: { nameMap: 'ko', color: '#fff', fontWeight: 'bold' } },
+                    { top: 470, range: '2026', cellSize: ['auto', 20], itemStyle: { borderWidth: 4, borderColor: '#161b22', borderRadius: 5 }, dayLabel: { nameMap: 'ko', color: '#8b949e' }, monthLabel: { nameMap: 'ko', color: '#fff', fontWeight: 'bold' } }
                 ];
 
                 option.series = [
@@ -997,8 +982,8 @@
                         nameMap: ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月'], 
                         color: '#fff', 
                         fontWeight: 'bold',
-                        fontFamily: 'Noto Sans JP' /* (선택) 일본어 폰트가 더 예쁩니다 */
-}                    yearLabel: { show: false }
+                        fontFamily: 'Noto Sans JP' /* (선택) 일본어 폰트가 더 예쁩니다 */},
+                yearLabel: { show: false }
                 };
                 
                 option.series = [{ 
@@ -1077,6 +1062,7 @@
     </script>
 </body>
 </html>
+
 
 
 
