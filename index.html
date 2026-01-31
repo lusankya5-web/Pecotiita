@@ -382,6 +382,57 @@
                 transform: translate(calc(-50% + var(--x-move)), -150px) scale(1) rotate(var(--rot));
             }
         }
+/* 방명록 섹션 */
+        .message-section {
+            width: 100%; max-width: 800px; margin: 0 auto 150px; padding: 0 10px;
+        }
+
+        /* 입력창 디자인 */
+        .input-container {
+            display: flex; gap: 10px; justify-content: center; margin-bottom: 40px;
+            flex-wrap: wrap;
+        }
+        .input-container input {
+            padding: 12px; border-radius: 8px; border: 1px solid #444;
+            background: #161b22; color: #fff; outline: none;
+            font-family: 'Noto Sans JP', 'Pretendard', sans-serif;
+        }
+        #msg-name { width: 80px; text-align: center; }
+        #msg-content { flex: 1; min-width: 200px; }
+        
+        #msg-send-btn {
+            background: #FFD700; color: #000; border: none; padding: 0 20px;
+            border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.2s;
+        }
+        #msg-send-btn:hover { background: #ffea70; transform: scale(1.05); }
+
+        /* 포스트잇 메모 카드 */
+        .msg-card {
+            display: inline-block; width: 100%; margin-bottom: 15px;
+            background: #fff; color: #333;
+            padding: 15px; border-radius: 12px 0 12px 0; /* 종이 접힌 느낌 */
+            box-shadow: 2px 2px 10px rgba(0,0,0,0.3);
+            position: relative; break-inside: avoid;
+            animation: fadeIn 0.5s ease-out;
+        }
+        
+        .msg-header { 
+            font-size: 0.8rem; color: #666; margin-bottom: 8px; font-weight: bold; 
+            border-bottom: 1px dashed #ccc; padding-bottom: 5px;
+            display: flex; justify-content: space-between;
+        }
+        .msg-body { font-size: 0.95rem; line-height: 1.4; word-break: break-all; }
+        .msg-date { font-size: 0.7rem; color: #999; font-weight: normal; }
+
+        /* 포스트잇 색상 랜덤 효과 (JS에서 클래스 부여) */
+        .note-yellow { background: #fff9c4; }
+        .note-blue { background: #e1f5fe; }
+        .note-pink { background: #f8bbd0; }
+        .note-green { background: #c8e6c9; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+        
     </style>
 </head>
 <body>
@@ -516,15 +567,19 @@
         </div>
     </div>
 
-        <div class="message-wall">
-            <div style="color: #fff; font-size: 1.2rem; margin-bottom: 20px; font-weight: bold;">실시간 마음 전하기 💌</div>
-            <div style="margin-bottom: 40px; display: flex; justify-content: center; gap: 8px; flex-wrap: wrap;">
-                <input type="text" id="user-name" placeholder="닉네임" style="padding: 12px; border-radius: 8px; border: none; width: 30%;">
-                <input type="text" id="user-msg" placeholder="따뜻한 한마디" style="padding: 12px; border-radius: 8px; border: none; width: 65%;">
-                <button id="send-btn" class="carrot-btn" style="padding: 10px 0; width: 100%; margin-top: 5px; font-size: 1rem; border-radius: 10px;">전송하기</button>
-            </div>
-            <div id="messages-display" class="notes-grid"></div>
+<div class="message-section">
+        <h2 class="section-title">Message Wall</h2>
+        <p style="text-align:center; color:#8b949e; margin-bottom:30px;">卒業を祝って、温かい一言を残してください 💌</p>
+
+        <div class="input-container">
+            <input type="text" id="msg-name" placeholder="ニックネーム" maxlength="10">
+            <input type="text" id="msg-content" placeholder="内容を入力してください（最大200文字）" maxlength="200">
+            <button id="msg-send-btn">登録</button>
         </div>
+
+        <div id="message-board" class="masonry-wall">
+            </div>
+    </div>
 
     <div id="video-modal">
         <div id="video-container"><iframe id="video-frame" allowfullscreen></iframe><video id="local-video" controls style="display:none;"></video></div>
@@ -536,16 +591,14 @@
 
 <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getDatabase, ref, onValue, runTransaction } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+        // 'push', 'onChildAdded' 가 새로 추가되었습니다!
+        import { getDatabase, ref, onValue, runTransaction, push, onChildAdded } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-        // 🔥 사용자님의 키 + DB 주소 합체 완료 🔥
+        // 🔥 [필수] 본인의 Firebase 설정값으로 채워주세요 🔥
         const firebaseConfig = {
             apiKey: "AIzaSyBPf06S24ITUXs8nJSCzNKUMTVlbuO0Y5o",
             authDomain: "pecotiita-love.firebaseapp.com",
-            
-            // [중요] 이게 있어야 당근 갯수가 저장됩니다!
             databaseURL: "https://pecotiita-love-default-rtdb.firebaseio.com",
-            
             projectId: "pecotiita-love",
             storageBucket: "pecotiita-love.firebasestorage.app",
             messagingSenderId: "192894613771",
@@ -553,63 +606,116 @@
             measurementId: "G-MY1NYP8V10"
         };
 
-        // Firebase 초기화
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
-        const loveRef = ref(db, 'carrot_count'); // DB에 저장될 이름
+        
+        // DB 경로 설정
+        const loveRef = ref(db, 'carrot_count'); // 당근 갯수
+        const msgRef = ref(db, 'guestbook');     // [NEW] 방명록 메시지
 
-        // 1. [읽기] DB 숫자가 바뀌면 화면 업데이트
+        // ------------------------------------------------
+        // 1. [당근 버튼] 기능 (기존 코드 유지)
+        // ------------------------------------------------
         onValue(loveRef, (snapshot) => {
             const data = snapshot.val() || 0;
             const countEl = document.getElementById('love-count');
             if(countEl) countEl.innerText = data.toLocaleString();
         });
 
-        // 2. [클릭] 숫자 증가 + 세련된 이모지 효과
         const btn = document.getElementById('love-btn');
         if(btn) {
             btn.addEventListener('click', (e) => {
-                // (1) DB 숫자 증가 (트랜잭션)
-                runTransaction(loveRef, (currentCount) => {
-                    return (currentCount || 0) + 1;
-                });
-
-                // (2) 이모지 팡팡 효과
+                runTransaction(loveRef, (c) => (c || 0) + 1);
                 createPopEmojis(e.clientX, e.clientY);
             });
         }
 
-        // 🥕🧡 이모지 생성 함수
+        // ------------------------------------------------
+        // 2. [방명록] 기능 (새로 추가됨)
+        // ------------------------------------------------
+        
+        // (1) 메시지 등록 (보내기 버튼 클릭 시)
+        document.getElementById('msg-send-btn').addEventListener('click', writeMessage);
+        
+        function writeMessage() {
+            const nameInput = document.getElementById('msg-name');
+            const contentInput = document.getElementById('msg-content');
+            
+            const name = nameInput.value.trim();
+            const content = contentInput.value.trim();
+
+            if (!name || !content) {
+                alert("닉네임과 내용을 모두 입력해주세요! 🥺");
+                return;
+            }
+
+            // 파이어베이스에 저장 (push)
+            push(msgRef, {
+                name: name,
+                content: content,
+                date: new Date().toLocaleDateString(), // 오늘 날짜
+                timestamp: Date.now() // 정렬용 시간
+            });
+
+            // 입력창 비우기
+            nameInput.value = '';
+            contentInput.value = '';
+        }
+
+        // (2) 실시간 메시지 표시 (DB에 새 글이 생기면 화면에 붙임)
+        // 데이터가 '추가될 때마다' 이 함수가 실행됩니다.
+        onChildAdded(msgRef, (data) => {
+            const msg = data.val();
+            const board = document.getElementById('message-board');
+
+            // 포스트잇 카드 만들기
+            const card = document.createElement('div');
+            
+            // 랜덤 색상 부여 (노랑, 파랑, 핑크, 초록 중 하나)
+            const colors = ['note-yellow', 'note-blue', 'note-pink', 'note-green'];
+            const randomColor = colors[Math.floor(Math.random() * colors.length)];
+            
+            card.className = `msg-card ${randomColor}`;
+            
+            card.innerHTML = `
+                <div class="msg-header">
+                    <span>From. ${escapeHtml(msg.name)}</span>
+                    <span class="msg-date">${msg.date}</span>
+                </div>
+                <div class="msg-body">${escapeHtml(msg.content)}</div>
+            `;
+
+            // 최신 글이 맨 위에 오게 하려면 prepend, 아래에 쌓으려면 append
+            board.prepend(card); 
+        });
+
+        // (보안) HTML 태그 무력화 함수 (XSS 방지)
+        function escapeHtml(text) {
+            if (!text) return "";
+            return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+        }
+
+        // ------------------------------------------------
+        // [유틸] 이모지 효과 함수
+        // ------------------------------------------------
         function createPopEmojis(x, y) {
             const emojis = ['🥕', '🧡', '🥕', '✨']; 
-            
-            // 한 번 클릭에 3~5개의 이모지가 랜덤하게 튀어나옴
             const count = 3 + Math.floor(Math.random() * 3); 
-
             for (let i = 0; i < count; i++) {
                 const el = document.createElement('div');
                 el.className = 'pop-emoji';
                 el.innerText = emojis[Math.floor(Math.random() * emojis.length)];
-                
-                // 랜덤 움직임 설정
                 const randomX = (Math.random() - 0.5) * 100 + 'px'; 
                 const randomRot = (Math.random() - 0.5) * 60 + 'deg'; 
-                
                 el.style.setProperty('--x-move', randomX);
                 el.style.setProperty('--rot', randomRot);
-
-                // 클릭 위치 보정
                 el.style.left = x + 'px';
                 el.style.top = y + 'px';
-                
                 document.body.appendChild(el);
-
-                // 애니메이션 끝나면 삭제
                 setTimeout(() => el.remove(), 1000);
             }
         }
     </script>
-
     <script>
         // ----------------------------------------------------
         // [YouTube BGM] 오류 153 방지 & 정책 준수
@@ -905,6 +1011,7 @@
     </script>
 </body>
 </html>
+
 
 
 
