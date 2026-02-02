@@ -646,9 +646,7 @@
             const pw = prompt("管理者パスワードを入力してください。:");
             if (!pw) return; // 취소 누르면 종료
 
-            // '0913'을 SHA-256으로 변환한 값 (해시값)
-            const targetHash = "a5d5d67694903a748950d29759d54e4479268f8605c308005391c78440938495";
-
+            const targetHash = "0b2401a6452296d9d19003517604130089f325990262175253d71241154563a6";
             // 입력받은 비밀번호를 암호화하는 함수
             const hashBuffer = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(pw));
             const hashArray = Array.from(new Uint8Array(hashBuffer));
@@ -1130,6 +1128,7 @@
     </script>
 </body>
 </html>
+
 
 
 
