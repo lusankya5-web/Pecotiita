@@ -637,12 +637,28 @@
         // ------------------------------------------------
         
         // (1) 로그인 함수 (전역 window에 등록하여 HTML에서 호출 가능하게 함)
-        window.adminLogin = function() {
+// ------------------------------------------------
+        // 1. [관리자] 기능 (암호화 버전)
+        // ------------------------------------------------
+        
+        // (1) 로그인 함수 (비밀번호를 해시값으로 비교하여 숨김)
+        window.adminLogin = async function() {
             const pw = prompt("管理者パスワードを入力してください。:");
-            if (pw === "0913") {
+            if (!pw) return; // 취소 누르면 종료
+
+            // '0913'을 SHA-256으로 변환한 값 (해시값)
+            const targetHash = "a5d5d67694903a748950d29759d54e4479268f8605c308005391c78440938495";
+
+            // 입력받은 비밀번호를 암호화하는 함수
+            const hashBuffer = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(pw));
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+            const inputHash = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+
+            // 암호화된 값끼리 비교
+            if (inputHash === targetHash) {
                 alert("管理者モードON！🔧\nメッセージに削除ボタン（✕）が表示されます。");
-                document.body.classList.add("admin-mode"); // CSS로 삭제 버튼 보이게 함
-            } else if (pw !== null) {
+                document.body.classList.add("admin-mode"); 
+            } else {
                 alert("パスワードが間違っています。");
             }
         };
@@ -1114,6 +1130,7 @@
     </script>
 </body>
 </html>
+
 
 
 
