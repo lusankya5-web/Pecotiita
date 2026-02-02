@@ -641,19 +641,17 @@
         // 1. [관리자] 기능 (암호화 버전)
         // ------------------------------------------------
         
-        // (1) 로그인 함수 (비밀번호를 해시값으로 비교하여 숨김)
-        window.adminLogin = async function() {
-            const pw = prompt("管理者パスワードを入力してください。:");
-            if (!pw) return; // 취소 누르면 종료
+        // (1) 로그인 함수 (환경 상관없이 작동하는 버전)
+        window.adminLogin = function() {
+            // 공백이 섞여도 제거해주는 .trim() 추가
+            const pw = (prompt("管理者パスワードを入力してください。:") || "").trim();
+            
+            if (!pw) return; 
 
-            const targetHash = "0b2401a6452296d9d19003517604130089f325990262175253d71241154563a6";
-            // 입력받은 비밀번호를 암호화하는 함수
-            const hashBuffer = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(pw));
-            const hashArray = Array.from(new Uint8Array(hashBuffer));
-            const inputHash = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+            const target = "MDkxMw=="; 
 
-            // 암호화된 값끼리 비교
-            if (inputHash === targetHash) {
+            // 입력한 값을 똑같이 변환해서 비교 (btoa 함수 사용)
+            if (btoa(pw) === target) {
                 alert("管理者モードON！🔧\nメッセージに削除ボタン（✕）が表示されます。");
                 document.body.classList.add("admin-mode"); 
             } else {
@@ -1128,6 +1126,7 @@
     </script>
 </body>
 </html>
+
 
 
 
