@@ -453,6 +453,45 @@
         body.admin-mode .delete-btn {
             display: flex; align-items: center; justify-content: center;
         }
+/* ------------------------------------------------
+           [NEW] 노래 검색 배너 스타일
+           ------------------------------------------------ */
+        .song-search-section {
+            width: 100%;
+            max-width: 1000px;
+            margin: 0 auto 100px; /* 위아래 간격 */
+            text-align: center;
+            padding: 0 20px;
+        }
+
+        .song-banner-link {
+            display: inline-block;
+            width: 100%;
+            max-width: 800px; /* 이미지 최대 너비 제한 */
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.6);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .song-banner-link img {
+            width: 100%;
+            height: auto;
+            display: block;
+            transition: transform 0.5s ease;
+        }
+
+        /* 마우스 올렸을 때 효과 (확대 + 금빛 테두리) */
+        .song-banner-link:hover {
+            transform: translateY(-5px);
+            border-color: #FFD700;
+            box-shadow: 0 0 30px rgba(255, 215, 0, 0.3);
+        }
+        .song-banner-link:hover img {
+            transform: scale(1.05); /* 이미지 살짝 확대 */
+        }
         
     </style>
 </head>
@@ -535,6 +574,22 @@
             <div id="heatmap-chart"></div>
         </div>
 
+        <div class="song-search-section">
+        <h2 class="section-title">
+            ぺこちーたの歌を検索して、<br>
+            <span style="font-size: 0.8em; opacity: 0.9;">日付ごとのバージョンを聴くことができます！</span>
+        </h2>
+        
+        <p style="color:#8b949e; margin-bottom: 30px; font-size: 0.9rem;">
+            画像をタップして、歌のアーカイブページへ移動します 🎵<br>
+            (이미지를 클릭하면 노래 아카이브 페이지로 이동합니다)
+        </p>
+
+        <a href="https://lusankya5-web.github.io/pecotiita-songlist/" target="_blank" class="song-banner-link">
+            <img src="images/songlist.png" alt="Pecotiita Song List Search">
+        </a>
+    </div>
+        
        <div class="gallery-container">
         <h2 class="section-title">Fan Art Gallery</h2>
         <p style="text-align:center; color:#8b949e; margin-bottom:30px;">ファンたちが贈ってくれた大切な思い出들</p>
@@ -1126,6 +1181,7 @@
     </script>
 </body>
 </html>
+
 
 
 
