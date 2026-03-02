@@ -668,7 +668,9 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         // [중요] remove(삭제), onChildRemoved(삭제감지) 기능이 추가됨
         import { getDatabase, ref, onValue, runTransaction, push, onChildAdded, remove, onChildRemoved } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
-
+// ▼▼▼ [NEW] 인증 기능 불러오기 추가 ▼▼▼
+        import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+    
         // 🔥 [필수] 본인의 Firebase 설정값으로 채워주세요 🔥
         const firebaseConfig = {
             apiKey: "AIzaSyBPf06S24ITUXs8nJSCzNKUMTVlbuO0Y5o",
@@ -683,7 +685,13 @@
 
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
-        
+
+    // ▼▼▼ [NEW] 사이트 접속 시 자동으로 '익명 로그인' 실행 ▼▼▼
+        const auth = getAuth(app);
+        signInAnonymously(auth).catch((error) => {
+            console.error("익명 로그인 실패:", error);
+        });
+    
         const loveRef = ref(db, 'carrot_count');
         const msgRef = ref(db, 'guestbook');
 
@@ -1181,6 +1189,7 @@
     </script>
 </body>
 </html>
+
 
 
 
